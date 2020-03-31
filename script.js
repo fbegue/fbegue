@@ -1,3 +1,5 @@
+/** @jsx React.DOM */
+
 try {
   var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   var recognition = new SpeechRecognition();
@@ -29,11 +31,22 @@ renderNotes(notes);
 // )}
 
 //import './index.css'
-const rootElement = document.getElementById("root");
-ReactDOM.render(
-<div>fuck</div>,
-rootElement
-);
+// const rootElement = document.getElementById("root");
+// ReactDOM.render(
+// <div>fuck</div>,
+// rootElement
+// );
+
+
+// setTimeout(function(){
+//   ReactDOM.render(
+//       <h1>Hello, world!</h1>,
+//       document.getElementById('root')
+//   );
+// },2000)
+
+
+
 
 
 /*-----------------------------
@@ -56,6 +69,7 @@ recognition.onresult = function(event) {
   // Get a transcript of what was said.
   var transcript = event.results[current][0].transcript;
 
+  console.log(transcript);
   // Add the current transcript to the contents of our Note.
   // There is a weird bug on mobile, where everything is repeated twice.
   // There is no official solution so far so we have to handle an edge case.
@@ -67,7 +81,23 @@ recognition.onresult = function(event) {
   }
 };
 
-recognition.onstart = function() { 
+var fetch =  function(param){
+  return new Promise(function(done, fail) {
+
+    $.ajax({
+      url: 'http://localhost:8888/getMetroEvents',
+      type:"POST",
+      data: {data:JSON.stringify(param)}
+    }).done(function(payload){
+      //console.log("retrieved: ",payload);
+      done(payload)
+    })
+
+    // fakeFetch3().then(r =>{done(r)})
+  })
+}
+
+recognition.onstart = function() {
   instructions.text('Voice recognition activated. Try speaking into the microphone.');
 }
 
@@ -77,7 +107,7 @@ recognition.onspeechend = function() {
 
 recognition.onerror = function(event) {
   if(event.error == 'no-speech') {
-    instructions.text('No speech was detected. Try again.');  
+    instructions.text('No speech was detected. Try again.');
   };
 }
 
@@ -122,7 +152,7 @@ $('#save-note-btn').on('click', function(e) {
     noteTextarea.val('');
     instructions.text('Note saved successfully.');
   }
-      
+
 })
 
 
@@ -138,7 +168,7 @@ notesList.on('click', function(e) {
 
   // Delete note.
   if(target.hasClass('delete-note')) {
-    var dateTime = target.siblings('.date').text();  
+    var dateTime = target.siblings('.date').text();
     deleteNote(dateTime);
     target.closest('.note').remove();
   }
@@ -151,15 +181,15 @@ notesList.on('click', function(e) {
 ------------------------------*/
 
 function readOutLoud(message) {
-	var speech = new SpeechSynthesisUtterance();
+  var speech = new SpeechSynthesisUtterance();
 
   // Set the text and voice attributes.
-	speech.text = message;
-	speech.volume = 1;
-	speech.rate = 1;
-	speech.pitch = 1;
-  
-	window.speechSynthesis.speak(speech);
+  speech.text = message;
+  speech.volume = 1;
+  speech.rate = 1;
+  speech.pitch = 1;
+
+  window.speechSynthesis.speak(speech);
 }
 
 
@@ -179,7 +209,7 @@ function renderNotes(notes) {
           <a href="#" class="delete-note" title="Delete">Delete</a>
         </p>
         <p class="content">${note.content}</p>
-      </li>`;    
+      </li>`;
     });
   }
   else {
@@ -205,13 +235,13 @@ function getAllNotes() {
         date: key.replace('note-',''),
         content: localStorage.getItem(localStorage.key(i))
       });
-    } 
+    }
   }
   return notes;
 }
 
 
 function deleteNote(dateTime) {
-  localStorage.removeItem('note-' + dateTime); 
+  localStorage.removeItem('note-' + dateTime);
 }
 
